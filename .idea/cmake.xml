@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeSharedSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" ENABLED="true" GENERATION_DIR="build" CONFIG_NAME="Debug" GENERATION_OPTIONS="-G &quot;Visual Studio 17 2022&quot; -DCMAKE_JS_VERSION=7.2.1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded$&lt;$&lt;CONFIG:Debug&gt;:Debug&gt;DLL -DCMAKE_JS_INC=C:/Users/reito/.cmake-js/electron-x64/v25.2.0/include/node -DCMAKE_JS_SRC=C:/Users/reito/AppData/Roaming/npm/node_modules/cmake-js/lib/cpp/win_delay_load_hook.cc -DNODE_RUNTIME=electron -DNODE_RUNTIMEVERSION=25.2.0 -DNODE_ARCH=x64 -DCMAKE_JS_LIB=C:/Users/reito/.cmake-js/electron-x64/v25.2.0/x64/node.lib -DCMAKE_SHARED_LINKER_FLAGS=/DELAYLOAD:NODE.EXE" />
+      <configuration PROFILE_NAME="Release" ENABLED="true" GENERATION_DIR="build" CONFIG_NAME="Release" GENERATION_OPTIONS="-G &quot;Visual Studio 17 2022&quot; -DCMAKE_JS_VERSION=7.2.1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded$&lt;$&lt;CONFIG:Debug&gt;:Debug&gt;DLL -DCMAKE_JS_INC=C:/Users/reito/.cmake-js/electron-x64/v25.2.0/include/node -DCMAKE_JS_SRC=C:/Users/reito/AppData/Roaming/npm/node_modules/cmake-js/lib/cpp/win_delay_load_hook.cc -DNODE_RUNTIME=electron -DNODE_RUNTIMEVERSION=25.2.0 -DNODE_ARCH=x64 -DCMAKE_JS_LIB=C:/Users/reito/.cmake-js/electron-x64/v25.2.0/x64/node.lib -DCMAKE_SHARED_LINKER_FLAGS=/DELAYLOAD:NODE.EXE" />
+    </configurations>
+  </component>
+</project>
