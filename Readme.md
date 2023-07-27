@@ -4,7 +4,7 @@ Share [Electron](https://github.com/electron/electron)'s offscreen window's fram
 
 It listens to `paint` event and copies the frame data, sends to native module, copies to D3D11Texture2D and share.
 
-It is sad, that there's no way to directly copy browser's GPU texture. But the performance is just right. The `Map - Copy - Unmap` process takes about `2~4 ms` on my `RTX 3070 + 13900K`
+It is sad, that there's no way to directly copy browser's GPU texture (without heavily modifying chromium). But the performance is just right. The `Map - Copy - Unmap` process takes about `2~4 ms` on my `RTX 3070 + 13900K`
 
 ## Build
 
