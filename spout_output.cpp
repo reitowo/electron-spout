@@ -26,6 +26,12 @@ Napi::Object SpoutOutput::NewInstance(Napi::Env env, Napi::Value arg) {
 SpoutOutput::SpoutOutput(const Napi::CallbackInfo &info) : ObjectWrap(info) {
     auto name = info[0].As<Napi::String>();
     InitializeDevice();
+
+    if (device == nullptr) {
+        Napi::TypeError::New(this->Env(), "device is null").ThrowAsJavaScriptException();
+        return;
+    }
+
     output.SetSenderName(name.Utf8Value().c_str());
     output.OpenDirectX11(device);
 }
@@ -38,8 +44,10 @@ void SpoutOutput::UpdateFrame(const Napi::CallbackInfo &info) {
 
     EnsureTexture(width, height);
 
-    if (!texture)
+    if (!texture) {
+        Napi::TypeError::New(this->Env(), "texture is null").ThrowAsJavaScriptException();
         return;
+    }
 
     D3D11_MAPPED_SUBRESOURCE mapped;
     context->Map(texture, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
@@ -90,6 +98,7 @@ void SpoutOutput::EnsureTexture(int width, int height) {
 
     auto hr = device->CreateTexture2D(&texDesc_rgba, nullptr, &texture);
     if (FAILED(hr)) {
+        Napi::TypeError::New(this->Env(), "CreateTexture2D failed").ThrowAsJavaScriptException();
         return;
     }
 }
@@ -105,23 +114,29 @@ void SpoutOutput::InitializeDevice() {
     D3D_FEATURE_LEVEL FeatureLevel;
     // This flag adds support for surfaces with a different color channel ordering
     // than the default. It is required for compatibility with Direct2D.
-    UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG;
+    UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 
     // We need dxgi to share texture
     IDXGIFactory2 *pDXGIFactory;
     IDXGIAdapter *pAdapter = NULL;
     hr = CreateDXGIFactory(IID_IDXGIFactory2, (void **) &pDXGIFactory);
-    if (FAILED(hr))
+    if (FAILED(hr)) {
+        Napi::TypeError::New(this->Env(), "CreateDXGIFactory failed").ThrowAsJavaScriptException();
         return;
+    }
 
     hr = pDXGIFactory->EnumAdapters(0, &pAdapter);
-    if (FAILED(hr))
+    if (FAILED(hr)) {
+        Napi::TypeError::New(this->Env(), "EnumAdapters failed").ThrowAsJavaScriptException();
         return;
+    }
 
     hr = D3D11CreateDevice(pAdapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, creationFlags, FeatureLevels, NumFeatureLevels,
                            D3D11_SDK_VERSION, &device, &FeatureLevel, &context);
-    if (FAILED(hr))
+    if (FAILED(hr)) {
+        Napi::TypeError::New(this->Env(), "D3D11CreateDevice failed").ThrowAsJavaScriptException();
         return;
+    }
 
     pDXGIFactory->Release();
     pAdapter->Release();
