@@ -1,16 +1,16 @@
-# Electron Spout
+# Electron Spout 
 
-Share [Electron](https://github.com/electron/electron)'s offscreen window's frame to [Spout](https://github.com/leadedge/Spout2) output.
+[English](Readme_EN.md)
 
-It listens to `paint` event and copies the frame data, sends to native module, copies to D3D11Texture2D and share.
+通过 OSR 输出 [Electron](https://github.com/electron/electron) 的画面至 [Spout](https://github.com/leadedge/Spout2)
 
-> Sadly, at this point there's no way to directly copy browser's GPU texture (without heavily modifying chromium). But the performance is acceptable. The `Map - Copy - Unmap` process takes about `2~4 ms` on `RTX 3070 + 13900K`
+其监听 `paint` 事件，并发送图像数据至本模块，随后复制进入 Spout 的 D3D11Texture2D 以分享
+ 
+> 遗憾的是，目前无法直接访问 Chromium 的 GPU 材质，以达到最佳性能。但性能消耗是可接受的，在 13900K + 3070 的 PC 上大概耗时 3ms
 
-## Build
+## 编译
 
-1. Update the info in `package.json` according to your electron version. 
-   
-   > Set `arch` to `x86` if your project is targeting 32-bit.
+1. 更新 `package.json` 中的信息，以符合你的 Electron 版本以及架构 
 
     ```json
     { 
@@ -22,12 +22,12 @@ It listens to `paint` event and copies the frame data, sends to native module, c
     }
     ```
 
-2. Run `cmake-js print-configure` to get CMake configuration. 
+2. 运行 `cmake-js print-configure` 获取 CMake 选项
 
     ![img.png](img.png)
 
-3. Copy these arguments and set these variables to CMake options.
-   > Warning: You must change `-DCMAKE_MSVC_RUNTIME_LIBRARY` to `MultiThreaded$<$<CONFIG:Debug>:Debug>DLL` because we link Spout statically.
+3. 复制这些选项并设置到 IDE 中的 CMake 选项中
+   > 注意: 需要将 `-DCMAKE_MSVC_RUNTIME_LIBRARY` 设置为 `MultiThreaded$<$<CONFIG:Debug>:Debug>DLL`，因为 Spout 是静态链接的
    
    ```
    -G "Visual Studio 17 2022" -A x64
@@ -45,9 +45,9 @@ It listens to `paint` event and copies the frame data, sends to native module, c
    
    > There are environment dependent values, do not directly copy the text above, and always use the value provided by the command.
    
-4. Build and use the .node file in your project
+4. 编译并复制 .node 文件使用
 
-## Usage
+## 用法
 
 ```js
 let win = new BrowserWindow({
