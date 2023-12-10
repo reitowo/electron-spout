@@ -5,7 +5,7 @@
   "main": "index.js",
   "cmake-js": {
     "runtime": "electron",
-    "runtimeVersion": "25.2.0",
+    "runtimeVersion": "25.8.0",
     "arch": "x64"
   }
 }
