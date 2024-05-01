@@ -3,13 +3,16 @@
 //
 
 #include "spout_output.h"
+#include <d3d11_1.h>
 #include <dxgi1_2.h>
+#include <wrl/client.h>
 
 void SpoutOutput::Init(Napi::Env env, Napi::Object exports) {
     Napi::Function func =
             DefineClass(env, "SpoutOutput",
                         {InstanceAccessor("name", &SpoutOutput::NameGetter, &SpoutOutput::NameSetter),
-                         InstanceMethod("updateFrame", &SpoutOutput::UpdateFrame)});
+                         InstanceMethod("updateFrame", &SpoutOutput::UpdateFrame),
+                         InstanceMethod("updateTexture", &SpoutOutput::UpdateTexture)});
 
     Napi::FunctionReference *constructor = new Napi::FunctionReference();
     *constructor = Napi::Persistent(func);
@@ -42,7 +45,7 @@ void SpoutOutput::UpdateFrame(const Napi::CallbackInfo &info) {
     auto width = size.Get("width").As<Napi::Number>().Uint32Value();
     auto height = size.Get("height").As<Napi::Number>().Uint32Value();
 
-    EnsureTexture(width, height);
+    EnsureStagingTexture(width, height);
 
     if (!texture) {
         Napi::TypeError::New(this->Env(), "texture is null").ThrowAsJavaScriptException();
@@ -57,9 +60,28 @@ void SpoutOutput::UpdateFrame(const Napi::CallbackInfo &info) {
     output.SendTexture(texture);
 }
 
+void SpoutOutput::UpdateTexture(const Napi::CallbackInfo &info) {
+    auto size = info[0].As<Napi::Object>();
+    auto widgetType = size.Get("widgetType").As<Napi::String>();
+    auto pixelFormat = size.Get("pixelFormat").As<Napi::String>();
+    auto sharedTextureHandleString = size.Get("sharedTextureHandle").As<Napi::String>();
+
+    HANDLE handle = (HANDLE) std::stoull(sharedTextureHandleString);
+
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> shared_texture = nullptr;
+    HRESULT hr = device1->OpenSharedResource1(handle, IID_PPV_ARGS(&shared_texture));
+    if (FAILED(hr)) {
+        Napi::TypeError::New(this->Env(), "failed to open shared texture resource").ThrowAsJavaScriptException();
+        return;
+    }
+
+    output.SendTexture(shared_texture.Get());
+}
+
 Napi::Value SpoutOutput::NameGetter(const Napi::CallbackInfo &info) {
     return Napi::String::New(info.Env(), output.GetSenderName());
 }
+
 void SpoutOutput::NameSetter(const Napi::CallbackInfo &info, const Napi::Value &value) {
     auto name = value.As<Napi::String>();
     output.SetSenderName(name.Utf8Value().c_str());
@@ -70,10 +92,12 @@ SpoutOutput::~SpoutOutput() {
     output.CloseDirectX11();
     if (texture)
         texture->Release();
+    device1->Release();
     context->Release();
     device->Release();
 }
-void SpoutOutput::EnsureTexture(int width, int height) {
+
+void SpoutOutput::EnsureStagingTexture(int width, int height) {
     if (texWidth == width && texHeight == height)
         return;
     texWidth = width;
@@ -98,7 +122,7 @@ void SpoutOutput::EnsureTexture(int width, int height) {
 
     auto hr = device->CreateTexture2D(&texDesc_rgba, nullptr, &texture);
     if (FAILED(hr)) {
-        Napi::TypeError::New(this->Env(), "CreateTexture2D failed").ThrowAsJavaScriptException();
+        Napi::TypeError::New(this->Env(), "Create staging texture failed").ThrowAsJavaScriptException();
         return;
     }
 }
@@ -108,8 +132,7 @@ void SpoutOutput::InitializeDevice() {
 
     // Feature levels supported
     D3D_FEATURE_LEVEL FeatureLevels[] = {
-            D3D_FEATURE_LEVEL_11_0,
-    };
+            D3D_FEATURE_LEVEL_11_1};
     UINT NumFeatureLevels = ARRAYSIZE(FeatureLevels);
     D3D_FEATURE_LEVEL FeatureLevel;
     // This flag adds support for surfaces with a different color channel ordering
@@ -135,6 +158,12 @@ void SpoutOutput::InitializeDevice() {
                            D3D11_SDK_VERSION, &device, &FeatureLevel, &context);
     if (FAILED(hr)) {
         Napi::TypeError::New(this->Env(), "D3D11CreateDevice failed").ThrowAsJavaScriptException();
+        return;
+    }
+
+    hr = device->QueryInterface(IID_PPV_ARGS(&device1));
+    if (FAILED(hr)) {
+        Napi::TypeError::New(this->Env(), "failed to open d3d11_1 device").ThrowAsJavaScriptException();
         return;
     }
 

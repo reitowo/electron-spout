@@ -5,8 +5,6 @@
 通过 OSR 输出 [Electron](https://github.com/electron/electron) 的画面至 [Spout](https://github.com/leadedge/Spout2)
 
 其监听 `paint` 事件，并发送图像数据至本模块，随后复制进入 Spout 的 D3D11Texture2D 以分享
- 
-> 遗憾的是，目前无法直接访问 Chromium 的 GPU 材质，以达到最佳性能。但性能消耗是可接受的，在 13900K + 3070 的 PC 上大概耗时 3ms
 
 ## 编译
 
@@ -51,20 +49,26 @@
 
 ```js
 let win = new BrowserWindow({
-    title: "MyWindow",
-    webPreferences: {
-        preload,
-        offscreen: true,
-    }, 
-    show: false,
-    transparent: true
+   title: "MyWindow",
+   webPreferences: {
+      preload,
+      offscreen: true,
+      offscreenUseSharedTexture: true
+   },
+   show: false,
+   transparent: true
 });
 
 const spout = require("electron_spout.node");
 const osr = new spout.SpoutOutput("Electron Output");
 
 win.webContents.setFrameRate(60);
-win.webContents.on("paint", (event, dirty, image) => {
-    osr.updateFrame(image.getBitmap(), image.getSize());
+win.webContents.on("paint", (event, dirty, image, texture) => {
+   if (texture) {
+      // when offscreenUseSharedTexture = true
+      osr.updateTexture(texture)
+   } else {
+      osr.updateFrame(image.getBitmap(), image.getSize());
+   }
 });
 ```

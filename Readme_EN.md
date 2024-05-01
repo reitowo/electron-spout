@@ -4,8 +4,6 @@ Share [Electron](https://github.com/electron/electron)'s offscreen window's fram
 
 It listens to `paint` event and copies the frame data, sends to native module, copies to D3D11Texture2D and share.
 
-> Sadly, at this point there's no way to directly copy browser's GPU texture (without heavily modifying chromium). But the performance is acceptable. The `Map - Copy - Unmap` process takes about `2~4 ms` on `RTX 3070 + 13900K`
-
 ## Build
 
 1. Update the info in `package.json` according to your electron version. 
@@ -51,20 +49,26 @@ It listens to `paint` event and copies the frame data, sends to native module, c
 
 ```js
 let win = new BrowserWindow({
-    title: "MyWindow",
-    webPreferences: {
-        preload,
-        offscreen: true,
-    }, 
-    show: false,
-    transparent: true
+   title: "MyWindow",
+   webPreferences: {
+      preload,
+      offscreen: true,
+      offscreenUseSharedTexture: true
+   },
+   show: false,
+   transparent: true
 });
 
 const spout = require("electron_spout.node");
 const osr = new spout.SpoutOutput("Electron Output");
 
 win.webContents.setFrameRate(60);
-win.webContents.on("paint", (event, dirty, image) => {
-    osr.updateFrame(image.getBitmap(), image.getSize());
+win.webContents.on("paint", (event, dirty, image, texture) => {
+   if (texture) {
+      // when offscreenUseSharedTexture = true
+      osr.updateTexture(texture)
+   } else {
+      osr.updateFrame(image.getBitmap(), image.getSize());
+   }
 });
 ```
