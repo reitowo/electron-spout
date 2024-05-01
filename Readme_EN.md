@@ -14,7 +14,7 @@ It listens to `paint` event and copies the frame data, sends to native module, c
     { 
       "cmake-js": {
         "runtime": "electron",
-        "runtimeVersion": "25.8.0",
+        "runtimeVersion": "30.0.1",
         "arch": "x64"
       }
     }

@@ -14,7 +14,7 @@
     { 
       "cmake-js": {
         "runtime": "electron",
-        "runtimeVersion": "25.8.0",
+        "runtimeVersion": "30.0.1",
         "arch": "x64"
       }
     }
