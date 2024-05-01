@@ -1,6 +1,8 @@
 # Electron Spout 
 
-[English](Readme_EN.md)
+[English](Readme_EN.md) 
+
+[Example](https://github.com/reitowo/electron-spout-example)
 
 通过 OSR 输出 [Electron](https://github.com/electron/electron) 的画面至 [Spout](https://github.com/leadedge/Spout2)
 
@@ -59,8 +61,8 @@ let win = new BrowserWindow({
    transparent: true
 });
 
-const spout = require("electron_spout.node");
-const osr = new spout.SpoutOutput("Electron Output");
+const { SpoutOutput } = require("electron_spout.node");
+const osr = new SpoutOutput("Electron Output");
 
 win.webContents.setFrameRate(60);
 win.webContents.on("paint", (event, dirty, image, texture) => {

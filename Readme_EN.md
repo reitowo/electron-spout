@@ -1,5 +1,7 @@
 # Electron Spout
 
+[Example](https://github.com/reitowo/electron-spout-example)
+
 Share [Electron](https://github.com/electron/electron)'s offscreen window's frame to [Spout](https://github.com/leadedge/Spout2) output.
 
 It listens to `paint` event and copies the frame data, sends to native module, copies to D3D11Texture2D and share.
@@ -59,8 +61,8 @@ let win = new BrowserWindow({
    transparent: true
 });
 
-const spout = require("electron_spout.node");
-const osr = new spout.SpoutOutput("Electron Output");
+const { SpoutOutput } = require("electron_spout.node");
+const osr = new SpoutOutput("Electron Output");
 
 win.webContents.setFrameRate(60);
 win.webContents.on("paint", (event, dirty, image, texture) => {
