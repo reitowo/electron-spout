@@ -54,19 +54,27 @@ void SpoutOutput::UpdateFrame(const Napi::CallbackInfo &info) {
 
     D3D11_MAPPED_SUBRESOURCE mapped;
     context->Map(texture, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
-    memcpy((uint8_t *) mapped.pData, buffer.Data(), buffer.ByteLength());
+
+    // Copy pixel data from buffer to mapped resource
+    auto data = buffer.Data();
+    auto pitch = width * 4; // Assuming 4 bytes per pixel (e.g., RGBA8)
+
+    for (UINT y = 0; y < height; ++y) {
+        memcpy(static_cast<uint8_t*>(mapped.pData) + y * mapped.RowPitch, data + y * pitch, pitch);
+    }
+
     context->Unmap(texture, 0);
 
     output.SendTexture(texture);
 }
 
 void SpoutOutput::UpdateTexture(const Napi::CallbackInfo &info) {
-    auto size = info[0].As<Napi::Object>();
-    auto widgetType = size.Get("widgetType").As<Napi::String>();
-    auto pixelFormat = size.Get("pixelFormat").As<Napi::String>();
-    auto sharedTextureHandleString = size.Get("sharedTextureHandle").As<Napi::String>();
+    auto tex = info[0].As<Napi::Object>();
+    auto widgetType = tex.Get("widgetType").As<Napi::String>();
+    auto pixelFormat = tex.Get("pixelFormat").As<Napi::String>();
+    auto buffer = Napi::Buffer<uint8_t>(info.Env(), tex.Get("sharedTextureHandle"));
 
-    HANDLE handle = (HANDLE) std::stoull(sharedTextureHandleString);
+    HANDLE handle = *reinterpret_cast<HANDLE*>(buffer.Data());
 
     Microsoft::WRL::ComPtr<ID3D11Texture2D> shared_texture = nullptr;
     HRESULT hr = device1->OpenSharedResource1(handle, IID_PPV_ARGS(&shared_texture));
